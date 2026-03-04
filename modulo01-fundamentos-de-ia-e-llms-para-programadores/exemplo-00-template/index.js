@@ -1,5 +1,45 @@
 import tf from '@tensorflow/tfjs-node';
 
+async function treinarModelo(inputXs, outputYs) {
+    // Criamos um modelo sequencial simples
+    const model = tf.sequential();
+    
+    // Camada de entrada e oculta:
+    // A camada de entrada tem 7 neurônios (correspondente às 7 características de entrada)
+    // A camada oculta tem 80 neurônios e usa a função de ativação ReLU: 
+    // ReLU (Rectified Linear Unit) é uma função de ativação que retorna o valor de entrada se for positivo, ou zero caso contrário.
+    model.add(tf.layers.dense({ inputShape: [7], units: 80, activation: 'relu' })); // Camada oculta
+    
+    // A camada de saída tem 3 neurônios (correspondente às 3 categorias de saída) e usa softmax para classificação (para proabilidade)
+    model.add(tf.layers.dense({ units: 3, activation: 'softmax' })); // Camada de saída
+
+    // Compilamos o modelo com otimizador Adam e função de perda categoricalCrossentropy (para classificação)
+    // O que é Otimimizador Adam? É um algoritmo de otimização que ajusta os pesos do modelo durante o treinamento para minimizar a função de perda. 
+    // Ele é eficiente e amplamente utilizado em redes neurais.
+    model.compile({
+        optimizer: 'adam',
+        loss: 'categoricalCrossentropy',
+        metrics: ['accuracy']
+    });
+
+    // Treinamos o modelo usando os dados de entrada (inputXs) e saída (outputYs)
+    // O número de épocas (epochs) define quantas vezes o modelo verá todo o conjunto de dados durante o treinamento.
+    await model.fit(inputXs, outputYs, 
+        {
+            verbose: 0, // Para não mostrar o progresso do treinamento
+            epochs: 100, // quantidade de vezes que o modelo verá todo o conjunto de dados
+            shuffle: true, // Embaralha os dados a cada época para melhorar o treinamento
+            callbacks: {
+                onEpochEnd: (epoch, logs) => {
+                    console.log(`Epoch ${epoch + 1}: loss = ${logs.loss.toFixed(4)}, accuracy = ${logs.acc.toFixed(4)}`);
+                }
+            }
+        }
+    );
+
+    return model;
+}
+
 // Exemplo de pessoas para treino (cada pessoa com idade, cor e localização)
 // const pessoas = [
 //     { nome: "Erick", idade: 30, cor: "azul", localizacao: "São Paulo" },
@@ -36,5 +76,9 @@ const tensorLabels = [
 const inputXs = tf.tensor2d(tensorPessoasNormalizado)
 const outputYs = tf.tensor2d(tensorLabels)
 
-inputXs.print();
-outputYs.print();
+//inputXs.print();
+//outputYs.print();
+
+// Treinamos o modelo usando os dados de entrada (inputXs) e saída (outputYs)
+// Quanto mais dados, melhor para o treinamento, mas para este exemplo simples, estamos usando apenas 3 amostras.
+const modelo = await treinarModelo(inputXs, outputYs);

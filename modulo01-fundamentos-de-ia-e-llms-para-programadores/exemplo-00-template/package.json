@@ -2,10 +2,10 @@
   "name": "exemplo-00",
   "version": "0.0.1",
   "description": "",
+  "type": "module",
   "main": "index.js",
-  "types": "module",
   "scripts": {
-    "start": "node --no-warnings --watch index.js",
+    "start": "nodemon --no-warnings index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
